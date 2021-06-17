@@ -2,13 +2,14 @@
 // http://localhost:3000/isolated/exercise/04.js
 
 import * as React from 'react'
+import { useLocalStorageState } from '../utils'
 
 function Board() {
   // Helper function for getting an empty array with nine items to represent the empty game board.
   const getEmptySquares = () => Array(9).fill(null);
 
   // 🐨 squares is the state for this component. Add useState for squares
-  const [squares, setSquares] = React.useState(() => JSON.parse(window.localStorage.getItem('tictactoe')) || getEmptySquares());
+  const [squares, setSquares] = useLocalStorageState('tictactoe', getEmptySquares());
   const [nextValue, setNextValue] = React.useState();
   const [winner, setWinner] = React.useState();
   const [status, setStatus] = React.useState();
@@ -25,7 +26,6 @@ function Board() {
     setNextValue(newNextValue);
     setWinner(newWinner);
     setStatus(calculateStatus(newWinner, squares, newNextValue));
-    window.localStorage.setItem('tictactoe', JSON.stringify(squares));
   }, [squares]);
 
   // This is the function your square click handler will call. `square` should
