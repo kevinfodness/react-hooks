@@ -11,6 +11,7 @@ import {
 
 function PokemonInfo({pokemonName}) {
   // 🐨 Have state for the pokemon (null)
+  const [error, setError] = React.useState(null);
   const [pokemon, setPokemon] = React.useState(null);
   // 🐨 use React.useEffect where the callback should be called whenever the
   // pokemon name changes.
@@ -24,10 +25,24 @@ function PokemonInfo({pokemonName}) {
     setPokemon(null);
     // 💰 Use the `fetchPokemon` function to fetch a pokemon by its name:
     (async () => {
-      const pokemonData = await fetchPokemon(pokemonName);
-      setPokemon(pokemonData);
+      try {
+        const pokemonData = await fetchPokemon(pokemonName);
+        setPokemon(pokemonData);
+        setError(null);
+      } catch (e) {
+        setError(e);
+      }
     })();
   }, [pokemonName]);
+
+  if (error) {
+    return (
+      <div role="alert">
+        There was an error: <pre style={{ whiteSpace: 'normal' }}>{error.message}</pre>
+      </div>
+    );
+  }
+
   // 🐨 return the following things based on the `pokemon` state and `pokemonName` prop:
   //   1. no pokemonName: 'Submit a pokemon'
   if (!pokemonName) {
