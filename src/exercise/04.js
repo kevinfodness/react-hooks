@@ -5,11 +5,16 @@ import * as React from 'react'
 import { useLocalStorageState } from '../utils'
 
 function Board() {
+  window.localStorage.removeItem('tictactoe');
+  window.localStorage.removeItem('tictactoe-history');
+
   // Helper function for getting an empty array with nine items to represent the empty game board.
   const getEmptySquares = () => Array(9).fill(null);
 
   // 🐨 squares is the state for this component. Add useState for squares
   const [squares, setSquares] = useLocalStorageState('tictactoe', getEmptySquares());
+  const [history, setHistory] = useLocalStorageState('tictactoe-history', []);
+  const [historyPointer, setHistoryPointer] = useLocalStorageState('tictactoe-history-pointer', [-1]);
   const [nextValue, setNextValue] = React.useState();
   const [winner, setWinner] = React.useState();
   const [status, setStatus] = React.useState();
@@ -23,9 +28,18 @@ function Board() {
   React.useEffect(() => {
     const newNextValue = calculateNextValue(squares);
     const newWinner = calculateWinner(squares);
+    const newStatus = calculateStatus(newWinner, squares, newNextValue);
     setNextValue(newNextValue);
     setWinner(newWinner);
-    setStatus(calculateStatus(newWinner, squares, newNextValue));
+    setStatus(newStatus);
+
+    // Determine if new status is different than old status at history pointer.
+    if (JSON.stringify(squares) !== JSON.stringify(history[historyPointer])) {
+      const historyCopy = history.slice(0, historyPointer + 1);
+      historyCopy.push(squares);
+      setHistory(historyCopy);
+      setHistoryPointer(historyPointer + 1);
+    }
   }, [squares]);
 
   // This is the function your square click handler will call. `square` should
@@ -50,10 +64,17 @@ function Board() {
     setSquares(squaresCopy);
   }
 
+  const historyNavigate = (index) => {
+    setSquares(history[index]);
+    setHistoryPointer(index);
+  };
+
   function restart() {
     // 🐨 reset the squares
     // 💰 `Array(9).fill(null)` will do it!
     setSquares(getEmptySquares());
+    setHistory([]);
+    setHistoryPointer(-1);
   }
 
   function renderSquare(i) {
@@ -63,6 +84,18 @@ function Board() {
       </button>
     )
   }
+
+  const HistoryItem = ({ index }) => {
+    const isCurrent = index === historyPointer;
+    const isStart = index === 0;
+    return (
+      <li>
+        <button onClick={() => historyNavigate(index)} disabled={isCurrent}>
+          {isStart ? `Go to game start${isCurrent ? ' (current)' : ''}` : `Go to move #${index}${isCurrent ? ' (current)' : ''}`}
+        </button>
+      </li>
+    );
+  };
 
   return (
     <div>
@@ -86,6 +119,12 @@ function Board() {
       <button className="restart" onClick={restart}>
         restart
       </button>
+      <h2>History</h2>
+      <ol>
+        {history.map((item, index) => (
+          <HistoryItem key={index} index={index} />
+        ))}
+      </ol>
     </div>
   )
 }
