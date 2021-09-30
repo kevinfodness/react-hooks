@@ -4,8 +4,11 @@
 import * as React from 'react'
 
 function Board() {
+  // Helper function for getting an empty array with nine items to represent the empty game board.
+  const getEmptySquares = () => Array(9).fill(null);
+
   // 🐨 squares is the state for this component. Add useState for squares
-  const [squares, setSquares] = React.useState(() => Array(9).fill(null));
+  const [squares, setSquares] = React.useState(() => JSON.parse(window.localStorage.getItem('tictactoe')) || getEmptySquares());
   const [nextValue, setNextValue] = React.useState();
   const [winner, setWinner] = React.useState();
   const [status, setStatus] = React.useState();
@@ -22,6 +25,7 @@ function Board() {
     setNextValue(newNextValue);
     setWinner(newWinner);
     setStatus(calculateStatus(newWinner, squares, newNextValue));
+    window.localStorage.setItem('tictactoe', JSON.stringify(squares));
   }, [squares]);
 
   // This is the function your square click handler will call. `square` should
@@ -49,7 +53,7 @@ function Board() {
   function restart() {
     // 🐨 reset the squares
     // 💰 `Array(9).fill(null)` will do it!
-    setSquares(Array(9).fill(null));
+    setSquares(getEmptySquares());
   }
 
   function renderSquare(i) {
